@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Training: Gemini for GBS Leaders</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="antialiased">
+
+    <div id="header-placeholder"></div>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <section id="reverse-prompt" class="page-section mb-16 md:mb-24 fade-in">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">"Reverse Prompt" Generator</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">Learn by deconstruction. Paste in a piece of high-quality text you've written, and this tool will analyze it and generate the prompt that could have created it.</p>
+            </div>
+            <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+                <div>
+                    <label for="reversePromptInput" class="block text-sm font-semibold text-gray-800 mb-2">Paste your completed work here (e.g., a well-written email, a summary):</label>
+                    <textarea id="reversePromptInput" rows="8" class="builder-textarea w-full" placeholder="Paste your text here..."></textarea>
+                </div>
+                <div class="mt-6 text-center">
+                    <button id="generateReversePromptBtn" class="bg-[#4A90E2] text-white font-bold py-3 px-8 rounded-full hover:bg-blue-600 transition-colors shadow-lg">
+                        Generate Reverse Prompt
+                    </button>
+                </div>
+                <div id="reverse-prompt-spinner" class="hidden mx-auto mt-8 spinner"></div>
+                <div id="reverse-prompt-output-container" class="mt-8 hidden">
+                    <div>
+                        <h4 class="text-xl font-semibold text-gray-800 mb-4">Generated Prompt:</h4>
+                        <div class="relative code-block bg-gray-800 text-gray-200">
+                            <pre id="reverse-prompt-output" class="whitespace-pre-wrap"></pre>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <h4 class="text-xl font-semibold text-gray-800 mb-4">Why this prompt is effective:</h4>
+                        <div id="reverse-prompt-explanation" class="p-4 bg-blue-50 border border-blue-200 rounded-lg text-blue-800"></div>
+                    </div>
+                </div>
+                 <div id="reverse-prompt-error" class="hidden mt-8 p-4 bg-red-100 text-red-700 rounded-lg"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
