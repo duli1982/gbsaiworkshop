@@ -1105,7 +1105,7 @@
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- GLOBAL STATE ---
-        let db, auth, userId, userPromptsUnsubscribe, appId;
+        let db, auth, userId, userPromptsUnsubscribe;
         let userLibrary = []; // Local cache of user's prompts
         let currentScenarioCategory = null;
         let currentScenarioIndex = 0;
@@ -1366,13 +1366,15 @@
 
         // --- FIREBASE INITIALIZATION ---
         async function initFirebase() {
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training';
+            const appId = typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training';
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
+            console.log("Initializing Firebase...");
             if (!firebaseConfig) {
-                console.error("Firebase config not found.");
+                console.error("FIREBASE_CONFIG is not defined. Firebase cannot be initialized.");
                 return;
             }
+            console.log("Firebase config found:", firebaseConfig);
 
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -1403,7 +1405,7 @@
         // --- DATA HANDLING (FIRESTORE) ---
         function loadUserLibrary() {
             if (!userId) return;
-            const promptsCollectionPath = `/artifacts/${appId}/users/${userId}/prompts`;
+            const promptsCollectionPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts`;
             const q = query(collection(db, promptsCollectionPath));
 
             userPromptsUnsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -1419,7 +1421,7 @@
 
         async function addPromptToLibrary(promptData) {
             if (!userId) return;
-            const promptsCollectionPath = `/artifacts/${appId}/users/${userId}/prompts`;
+            const promptsCollectionPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts`;
             try {
                 await addDoc(collection(db, promptsCollectionPath), promptData);
                 console.log("Prompt added to library");
@@ -1430,7 +1432,7 @@
 
         async function removePromptFromLibrary(promptId) {
             if (!userId) return;
-            const docPath = `/artifacts/${appId}/users/${userId}/prompts/${promptId}`;
+            const docPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts/${promptId}`;
             try {
                 await deleteDoc(doc(db, docPath));
                 console.log("Prompt removed from library");
@@ -1534,13 +1536,30 @@
         document.addEventListener('click', (e) => {
             // Favorite button in main library
             if (e.target.closest('.favorite-btn')) {
+                console.log("Favorite button clicked.");
                 const btn = e.target.closest('.favorite-btn');
                 const promptId = btn.dataset.id;
+
+                // Check against the local cache for the current state
                 const existingFavorite = userLibrary.find(p => p.type === 'favorite' && p.originalId === promptId);
 
                 if (existingFavorite) {
+                    // --- Optimistically Unfavorite ---
+                    console.log(`Optimistically unfavoriting prompt ID: ${existingFavorite.id}`);
+                    // 1. Visually remove favorite status
+                    btn.classList.remove('favorited');
+                    // 2. Remove from local cache to prevent race conditions on quick clicks
+                    userLibrary = userLibrary.filter(p => p.id !== existingFavorite.id);
+                    // 3. Call the database function
                     removePromptFromLibrary(existingFavorite.id);
                 } else {
+                    // --- Optimistically Favorite ---
+                    console.log(`Optimistically favoriting prompt ID: ${promptId}`);
+                    // 1. Visually add favorite status
+                    btn.classList.add('favorited');
+                    // 2. We can't add to the local cache here because we don't know the new Firestore document ID.
+                    //    The onSnapshot listener is responsible for adding the confirmed favorite to the cache.
+                    // 3. Call the database function
                     addPromptToLibrary({ type: 'favorite', originalId: promptId });
                 }
             }
