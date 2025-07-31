@@ -1105,7 +1105,7 @@
         import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- GLOBAL STATE ---
-        let db, auth, userId, userPromptsUnsubscribe;
+        let db, auth, userId, userPromptsUnsubscribe, appId;
         let userLibrary = []; // Local cache of user's prompts
         let currentScenarioCategory = null;
         let currentScenarioIndex = 0;
@@ -1366,7 +1366,7 @@
 
         // --- FIREBASE INITIALIZATION ---
         async function initFirebase() {
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training';
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training';
             const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
             if (!firebaseConfig) {
@@ -1403,7 +1403,7 @@
         // --- DATA HANDLING (FIRESTORE) ---
         function loadUserLibrary() {
             if (!userId) return;
-            const promptsCollectionPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts`;
+            const promptsCollectionPath = `/artifacts/${appId}/users/${userId}/prompts`;
             const q = query(collection(db, promptsCollectionPath));
 
             userPromptsUnsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -1419,7 +1419,7 @@
 
         async function addPromptToLibrary(promptData) {
             if (!userId) return;
-            const promptsCollectionPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts`;
+            const promptsCollectionPath = `/artifacts/${appId}/users/${userId}/prompts`;
             try {
                 await addDoc(collection(db, promptsCollectionPath), promptData);
                 console.log("Prompt added to library");
@@ -1430,7 +1430,7 @@
 
         async function removePromptFromLibrary(promptId) {
             if (!userId) return;
-            const docPath = `/artifacts/${typeof __app_id !== 'undefined' ? __app_id : 'gbs-gemini-training'}/users/${userId}/prompts/${promptId}`;
+            const docPath = `/artifacts/${appId}/users/${userId}/prompts/${promptId}`;
             try {
                 await deleteDoc(doc(db, docPath));
                 console.log("Prompt removed from library");
